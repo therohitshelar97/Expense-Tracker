@@ -106,7 +106,7 @@ def Exp_Enter():
     category1 = expenses[0]['category']
     time = expenses[0]['timestamp']
 
-
+    print(time)
    
 
     insert = "insert into expense(id, amount, category, description, time1) values ('{}','{}','{}','{}','{}') ".format(id,amount,category,description,time)
@@ -122,6 +122,7 @@ def Exp_Enter():
         rows.append(row)  # Append the current row (as a dictionary)
         row = ibm_db.fetch_assoc(selectStmt)  # Fetch the next row
 
+    warning = "No Warning"
     data = rows
     total_amt=0
     for amt in data:
@@ -129,7 +130,7 @@ def Exp_Enter():
     if total_amt > 5000:
             warning = f"You are spending a lot on {category}. Consider cutting down."
 
-            
+
     return render_template("index.html",amt=amount,cat=category1,desc=description,t=time,war=warning,total_amount=total_amt)
     # return redirect(url_for('Index'),exp=expenses)
 
