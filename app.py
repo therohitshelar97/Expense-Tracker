@@ -98,43 +98,60 @@ def Exp_Enter():
     # Update total
     category_totals[category] = category_totals.get(category, 0) + amount
     print(f"Logged ₹{amount} for '{description}' under category: {category}")
-
-    # Show summary
-
-    print("\n Summary:")
-    total = sum(category_totals.values())
-    for cat, amt in category_totals.items():
-        print(f"  {cat}: ₹{amt}")
-    print(f"\n Total spent: ₹{total}\n")
-
-        # Suggest if overspending
-    for cat, amt in category_totals.items():
-        warning = 'No Warning'
-        if amt > 5000:
-            warning = f"You are spending a lot on {cat}. Consider cutting down."
-
     
     
     id=1 
     description = expenses[0]['description']
     amount = expenses[0]['amount']
-    category = expenses[0]['category']
+    category1 = expenses[0]['category']
     time = expenses[0]['timestamp']
 
 
-    print(description)
-    print(amount)
-    print(category)
-    print(time)
+   
 
     insert = "insert into expense(id, amount, category, description, time1) values ('{}','{}','{}','{}','{}') ".format(id,amount,category,description,time)
     ibm_db.exec_immediate(conn, insert)
-    return render_template("index.html",amt=amount,cat=category,desc=description,t=time,war=warning)
+
+    
+    # Suggest if overspending
+    selectQuery = "select * from expense"
+    selectStmt = ibm_db.exec_immediate(conn, selectQuery)
+    rows = []  
+    row = ibm_db.fetch_assoc(selectStmt)
+    while row:  # Loop until no more rows are returned
+        rows.append(row)  # Append the current row (as a dictionary)
+        row = ibm_db.fetch_assoc(selectStmt)  # Fetch the next row
+
+    data = rows
+    total_amt=0
+    for amt in data:
+        total_amt=total_amt+amt['AMOUNT']
+    if total_amt > 5000:
+            warning = f"You are spending a lot on {category}. Consider cutting down."
+
+            
+    return render_template("index.html",amt=amount,cat=category1,desc=description,t=time,war=warning,total_amount=total_amt)
     # return redirect(url_for('Index'),exp=expenses)
 
 @app.route('/history')
 def History():
-    return render_template('hostory.html')
+    selectQuery = "select * from expense"
+    selectStmt = ibm_db.exec_immediate(conn, selectQuery)
+    rows = []  
+    row = ibm_db.fetch_assoc(selectStmt)
+    while row:  # Loop until no more rows are returned
+        rows.append(row)  # Append the current row (as a dictionary)
+        row = ibm_db.fetch_assoc(selectStmt)  # Fetch the next row
+
+    data = rows
+    total_amt=0
+    for amt in data:
+        total_amt=total_amt+amt['AMOUNT']
+    print(total_amt)
+    # if total_amt > 5000:
+    #         warning = f"You are spending a lot on {cat}. Consider cutting down."
+    # print(data)
+    return render_template('history.html',data=data,total_amount=total_amt)
 
 if __name__=='__main__':
     app.run(debug=True)
